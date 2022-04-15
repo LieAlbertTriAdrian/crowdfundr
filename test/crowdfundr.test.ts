@@ -161,12 +161,13 @@ describe("Crowdfundr", () => {
   describe("Project", () => {
     let projectAddress: string;
     let project: Project;
-    let newProject: Project;
 
     beforeEach(async () => {
       // TODO: Your ProjectFactory contract will need a `create` method, to
       //       create new Projects
-      const txReceiptUnresolved = await projectFactory.create(ONE_ETHER);
+      const txReceiptUnresolved = await projectFactory.create(
+        ethers.utils.parseEther("3")
+      );
       const txReceipt = await txReceiptUnresolved.wait();
 
       // TODO: Investigate this issue where you got
@@ -209,7 +210,7 @@ describe("Crowdfundr", () => {
 
           const contribution = await project.getContribution(alice.address);
 
-          expect(contribution).to.be.equal(ethers.utils.parseEther("3")); 
+          expect(contribution).to.be.equal(ethers.utils.parseEther("3"));
         });
 
         it('Emits a "FILL_ME_IN" event after a contribution is made', async () => {
@@ -242,14 +243,40 @@ describe("Crowdfundr", () => {
         it("Allows the final contribution to exceed the project funding goal", async () => {
           // Note: After this contribution, the project is fully funded and should not
           //       accept any additional contributions. (See next test.)
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("5") });
+
+          const contribution = await project.getContribution(alice.address);
+
+          expect(contribution).to.be.equal(ethers.utils.parseEther("5"));
         });
 
         it("Prevents additional contributions after a project is fully funded", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("5") });
+
+          await expect(
+            project
+              .connect(deployer)
+              .contribute({ value: ethers.utils.parseEther("0.02") })
+          ).to.be.revertedWith(
+            "project is fully funded and doesn't accept contribution anymore"
+          );
         });
 
         it("Prevents additional contributions after 30 days have passed since Project instance deployment", async () => {
-          expect(true).to.be.false;
+          await network.provider.send("evm_increaseTime", [
+            SECONDS_IN_DAY * 31,
+          ]);
+          await network.provider.send("evm_mine");
+
+          await expect(
+            project
+              .connect(deployer)
+              .contribute({ value: ethers.utils.parseEther("1") })
+          ).to.be.revertedWith("project is not ACTIVE anymore");
         });
       });
     });
@@ -257,33 +284,58 @@ describe("Crowdfundr", () => {
     describe("Withdrawals", () => {
       describe("Project Status: Active", () => {
         it("Prevents the creator from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await expect(
+            project.connect(deployer).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("project is not fully funded yet");
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await expect(
+            project.connect(alice).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("funds could only be withdrawn by the creator");
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await expect(
+            project.connect(alice).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("funds could only be withdrawn by the creator");
         });
       });
 
       describe("Project Status: Success", () => {
         it("Allows the creator to withdraw some of the contribution balance", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("5") });
+
+          await project.connect(deployer).withdrawFunds(ONE_ETHER);
         });
 
         it("Allows the creator to withdraw the entire contribution balance", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("5") });
+
+          await project.connect(deployer).withdrawFunds(ONE_ETHER.mul(5));
         });
 
         it("Allows the creator to make multiple withdrawals", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("5") });
+
+          await project.connect(deployer).withdrawFunds(ONE_ETHER);
+          await project.connect(deployer).withdrawFunds(ONE_ETHER);
         });
 
         it("Prevents the creator from withdrawing more than the contribution balance", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("5") });
+
+          await expect(
+            project.connect(deployer).withdrawFunds(ONE_ETHER.mul(6))
+          ).to.be.revertedWith("you do not have enough balance");
         });
 
         it('Emits a "FILL_ME_IN" event after a withdrawal is made by the creator', async () => {
@@ -291,11 +343,15 @@ describe("Crowdfundr", () => {
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await expect(
+            project.connect(alice).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("funds could only be withdrawn by the creator");
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await expect(
+            project.connect(bob).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("funds could only be withdrawn by the creator");
         });
       });
 
