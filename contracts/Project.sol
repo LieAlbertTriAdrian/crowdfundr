@@ -1,8 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import "hardhat/console.sol";
-
 contract Project {
     address public creator;
     uint256 public goalAmount;
@@ -31,17 +29,14 @@ contract Project {
     }
 
     function contribute() external payable {
-        console.log("msg.value", msg.value);
-        require(msg.value >= minimumContribution);
+        require(msg.value >= minimumContribution, "contribution amount is too small");
         // TODO: Check for deadline of the project
 
-        contributionOf[msg.sender] += 5;
+        contributionOf[msg.sender] += msg.value;
     }
 
     // get the total amount of ETH owned by the contribute
     function getContribution(address owner) public view returns (uint) {
-        console.log("contribution owner", owner);
-
         return contributionOf[owner ];
     }    
 

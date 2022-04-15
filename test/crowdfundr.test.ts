@@ -40,12 +40,15 @@
 */
 // ----------------------------------------------------------------------------
 
-import { expect } from "chai";
+import chai, { expect } from "chai";
 import { ethers, network } from "hardhat";
 import { BigNumber } from "ethers";
+import { solidity } from "ethereum-waffle";
 import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 
 import { Project, ProjectFactory, ProjectFactory__factory } from "../typechain";
+
+chai.use(solidity);
 
 // ----------------------------------------------------------------------------
 // OPTIONAL: Constants and Helper Functions
@@ -107,14 +110,14 @@ describe("Crowdfundr", () => {
       expect(projectFactory.address).to.be.ok;
     });
 
-    it.only("Can register a single project", async () => {
+    it("Can register a single project", async () => {
       projectFactory.create(ONE_ETHER);
       projects = await projectFactory.getDeployedProjects();
 
       expect(projects.length).to.equal(1);
     });
 
-    it.only("Can register multiple projects", async () => {
+    it("Can register multiple projects", async () => {
       projectFactory.create(ONE_ETHER);
       projectFactory.create(ONE_ETHER);
       projects = await projectFactory.getDeployedProjects();
@@ -130,7 +133,7 @@ describe("Crowdfundr", () => {
       expect(true).to.be.false;
     });
 
-    it.only('Emits a "FILL_ME_IN" event after registering a project', async () => {
+    it('Emits a "FILL_ME_IN" event after registering a project', async () => {
       const txReceiptUnresolved = await projectFactory.create(ONE_ETHER);
       const txReceipt = await txReceiptUnresolved.wait();
       const event: any = txReceipt.events![0].args!;
@@ -166,7 +169,10 @@ describe("Crowdfundr", () => {
       const txReceiptUnresolved = await projectFactory.create(ONE_ETHER);
       const txReceipt = await txReceiptUnresolved.wait();
 
-      projectAddress = txReceipt.events![0].args![0];
+      // TODO: Investigate this issue where you got
+      // Error: call revert exception [ See: https://links.ethers.org/v5-errors-CALL_EXCEPTION ] (method="getSummary()", errorArgs=null, errorName=null, errorSignature=null, reason=null, code=CALL_EXCEPTION, version=abi/5.6.0)
+      // projectAddress = txReceipt.events![0].args![0];
+      projectAddress = await projectFactory.deployedProjects(0);
       project = await ethers.getContractAt("Project", projectAddress);
     });
 
@@ -177,15 +183,19 @@ describe("Crowdfundr", () => {
             .connect(deployer)
             .contribute({ value: ethers.utils.parseEther("1") });
 
-          // TODO: Figure out how to call project.getContributionOf from project from getContractAt
+          const contribution = await project.getContribution(deployer.address);
+
+          expect(contribution).to.be.equal(ONE_ETHER);
         });
 
-        it.only("Allows any EOA to contribute", async () => {
+        it("Allows any EOA to contribute", async () => {
           await project
             .connect(alice)
-            .contribute({ value: ethers.utils.parseEther("1") });
+            .contribute({ value: ethers.utils.parseEther("2") });
 
-          console.log(await project.getSummary());
+          const contribution = await project.getContribution(alice.address);
+
+          expect(contribution).to.be.equal(ethers.utils.parseEther("2"));
         });
 
         it("Allows an EOA to make many separate contributions", async () => {
@@ -197,7 +207,9 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("2") });
 
-          expect(true).to.be.false;
+          const contribution = await project.getContribution(alice.address);
+
+          expect(contribution).to.be.equal(ethers.utils.parseEther("3")); 
         });
 
         it('Emits a "FILL_ME_IN" event after a contribution is made', async () => {
@@ -207,15 +219,22 @@ describe("Crowdfundr", () => {
 
       describe("Minimum ETH Per Contribution", () => {
         it("Reverts contributions below 0.01 ETH", async () => {
-          await project
-            .connect(deployer)
-            .contribute({ value: ethers.utils.parseEther("0.001") });
-
-          expect(true).to.be.false;
+          // TODO: Is this a correct way to check a revert?
+          await expect(
+            project
+              .connect(deployer)
+              .contribute({ value: ethers.utils.parseEther("0.001") })
+          ).to.be.revertedWith("contribution amount is too small");
         });
 
         it("Accepts contributions of exactly 0.01 ETH", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("0.01") });
+
+          const contribution = await project.getContribution(alice.address);
+
+          expect(contribution).to.be.equal(ethers.utils.parseEther("0.01"));
         });
       });
 
@@ -338,7 +357,7 @@ describe("Crowdfundr", () => {
 
       it("Awards a contributor with a second badge when their total contribution to a single project sums to at least 2 ETH", async () => {
         // Note: One address can receive multiple badges for a single project,
-        //       but they should only receive 1 badge per 1 ETH contributed.
+        //       but they should receive 1 badge per 1 ETH contributed.
         expect(true).to.be.false;
       });
 
