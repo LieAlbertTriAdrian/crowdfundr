@@ -173,7 +173,6 @@ describe("Crowdfundr", () => {
 
   describe("Project", () => {
     let projectAddress: string;
-    let projectAddress2: string;
     let project: Project;
 
     beforeEach(async () => {
@@ -184,9 +183,6 @@ describe("Crowdfundr", () => {
       );
       const txReceipt = await txReceiptUnresolved.wait();
 
-      // If you get this error,
-      // Error: call revert exception [ See: https://links.ethers.org/v5-errors-CALL_EXCEPTION ] (method="getSummary()", errorArgs=null, errorName=null, errorSignature=null, reason=null, code=CALL_EXCEPTION, version=abi/5.6.0)
-      // You might have put a wrong contract address
       projectAddress = txReceipt.events![0].args![0];
       project = await ethers.getContractAt("Project", projectAddress);
     });
