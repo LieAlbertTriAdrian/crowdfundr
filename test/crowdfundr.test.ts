@@ -484,7 +484,7 @@ describe("Crowdfundr", () => {
 
         await expect(
           project.connect(deployer).cancelProject()
-        ).to.be.revertedWith("cancellation could not be after 30 days passed");        
+        ).to.be.revertedWith("cancellation could not be after 30 days passed");
       });
 
       it('Emits a "FILL_ME_IN" event after a project is cancelled by the creator', async () => {
