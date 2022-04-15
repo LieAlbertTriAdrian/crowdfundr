@@ -31,7 +31,7 @@ contract Project {
     }
 
     function contribute() external payable {
-        console.log("msg. value", msg.value);
+        console.log("msg.value", msg.value);
         require(msg.value >= minimumContribution);
         // TODO: Check for deadline of the project
 

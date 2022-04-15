@@ -102,7 +102,6 @@ describe("Crowdfundr", () => {
   });
 
   describe("ProjectFactory", () => {
-    // TODO: Update all create function to accept inputs
     it("Deploys a contract", () => {
       // eslint-disable-next-line no-unused-expressions
       expect(projectFactory.address).to.be.ok;
