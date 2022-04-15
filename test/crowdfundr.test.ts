@@ -496,15 +496,33 @@ describe("Crowdfundr", () => {
 
     describe("NFT Contributor Badges", () => {
       it("Awards a contributor with a badge when they make a single contribution of at least 1 ETH", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("2.5") });
+
+        const badgeCount = await project.connect(alice).getBadge(alice.address);
+
+        expect(badgeCount).to.be.equal(1);
       });
 
       it("Awards a contributor with a badge when they make multiple contributions to a single project that sum to at least 1 ETH", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("2.5") });
+
+        const badgeCount = await project.connect(alice).getBadge(alice.address);
+
+        expect(badgeCount).to.be.equal(1);
       });
 
       it("Does not award a contributor with a badge if their total contribution to a single project sums to < 1 ETH", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("0.05") });
+
+        const badgeCount = await project.connect(alice).getBadge(alice.address);
+
+        expect(badgeCount).to.be.equal(0);
       });
 
       it("Awards a contributor with a second badge when their total contribution to a single project sums to at least 2 ETH", async () => {

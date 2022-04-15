@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-// import "hardhat/console.sol";
+import "hardhat/console.sol";
 
 contract Project {
     address public creator;
@@ -20,6 +20,7 @@ contract Project {
 
     // Ether held by the contract on behalf of contributors/pledgers
     mapping(address => uint) public contributionOf;
+    mapping(address => uint) public badgeOf;
 
     uint256 public totalContribution;
     uint256 public remainingContribution;
@@ -73,13 +74,25 @@ contract Project {
         totalContribution += msg.value;
         remainingContribution += msg.value;
 
+        if (msg.value >= 1) {
+            badgeOf[msg.sender] += 1;
+        }
+
+        console.log('badge');
+        console.log(badgeOf[msg.sender]);
+
         emit ContributionMade(msg.sender, msg.value);
     }
 
-    // get the total amount of ETH owned by the contribute
+    // get the total amount of ETH owned by the contributor
     function getContribution(address owner) public view returns (uint) {
         return contributionOf[owner ];
-    }    
+    }
+
+    // get the total badges owned by the contributor
+    function getBadge(address owner) public view returns (uint) {
+        return badgeOf[owner ];
+    }
 
     function withdrawFunds(uint amountToWithdraw) external payable {
         checkAndUpdateProjectStatus();
