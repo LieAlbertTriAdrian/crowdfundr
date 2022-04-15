@@ -26,7 +26,7 @@ contract Project {
         return (
             goalAmount
         );
-    }    
+    }
 
     function contribute() public payable {
         require(msg.value >= minimumContribution);
@@ -34,6 +34,11 @@ contract Project {
 
         contributionOf[msg.sender] += msg.value;
     }
+
+    // get the total amount of ETH owned by the contribute
+    function getContribution(address owner) public view returns (uint) {
+        return contributionOf[owner ];
+    }    
 
     function withdrawFunds() external payable {
         require(msg.sender == creator);

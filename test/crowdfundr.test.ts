@@ -167,7 +167,12 @@ describe("Crowdfundr", () => {
 
     describe("Contributions", () => {
       describe("Contributors", () => {
-        it("Allows the creator to contribute", async () => {
+        it.only("Allows the creator to contribute", async () => {
+          await project
+            .connect(deployer)
+            .contribute({ value: ethers.utils.parseEther("1") });
+
+          // TODO: Figure out how to verify the actual contribution amount
           expect(true).to.be.false;
         });
 
