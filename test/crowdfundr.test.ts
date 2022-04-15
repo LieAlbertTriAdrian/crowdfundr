@@ -71,6 +71,9 @@ describe("Crowdfundr", () => {
   let ProjectFactory: ProjectFactory__factory;
   let projectFactory: ProjectFactory;
 
+  // TODO: Change any to Project
+  let projects: any[];
+
   beforeEach(async () => {
     [deployer, alice, bob] = await ethers.getSigners();
 
@@ -95,15 +98,23 @@ describe("Crowdfundr", () => {
 
   describe("ProjectFactory", () => {
     it("Deploys a contract", () => {
+      // eslint-disable-next-line no-unused-expressions
       expect(projectFactory.address).to.be.ok;
     });
 
-    it("Can register a single project", async () => {
-      expect(true).to.be.false;
+    it.only("Can register a single project", async () => {
+      projectFactory.create();
+      projects = await projectFactory.getDeployedProjects();
+
+      expect(projects.length).to.equal(1);
     });
 
-    it("Can register multiple projects", async () => {
-      expect(true).to.be.false;
+    it.only("Can register multiple projects", async () => {
+      projectFactory.create();
+      projectFactory.create();
+      projects = await projectFactory.getDeployedProjects();
+
+      expect(projects.length).to.equal(2);
     });
 
     it("Registers projects with the correct owner", async () => {
