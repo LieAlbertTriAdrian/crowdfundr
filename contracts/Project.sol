@@ -1,8 +1,6 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import "hardhat/console.sol";
-
 contract Project {
     address public creator;
     uint256 public goalAmount;
@@ -77,9 +75,6 @@ contract Project {
         if (msg.value >= 1) {
             badgeOf[msg.sender] += 1;
         }
-
-        console.log('badge');
-        console.log(badgeOf[msg.sender]);
 
         emit ContributionMade(msg.sender, msg.value);
     }
