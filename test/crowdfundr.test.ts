@@ -97,6 +97,7 @@ describe("Crowdfundr", () => {
   });
 
   describe("ProjectFactory", () => {
+    // TODO: Update all create function to accept inputs
     it("Deploys a contract", () => {
       // eslint-disable-next-line no-unused-expressions
       expect(projectFactory.address).to.be.ok;
@@ -125,8 +126,13 @@ describe("Crowdfundr", () => {
       expect(true).to.be.false;
     });
 
-    it('Emits a "FILL_ME_IN" event after registering a project', async () => {
-      expect(true).to.be.false;
+    it.only('Emits a "FILL_ME_IN" event after registering a project', async () => {
+      const txReceiptUnresolved = await projectFactory.create(/* FILL_ME_IN */);
+      const txReceipt = await txReceiptUnresolved.wait();
+      const event: any = txReceipt.events![0].args!;
+
+      // eslint-disable-next-line no-unused-expressions
+      expect(event).to.not.be.empty;
     });
 
     it("Allows multiple contracts to accept ETH simultaneously", async () => {
