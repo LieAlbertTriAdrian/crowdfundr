@@ -77,8 +77,7 @@ describe("Crowdfundr", () => {
     // NOTE: You may need to pass arguments to the `deploy` function if your
     //       ProjectFactory contract's constructor has input parameters
     ProjectFactory = await ethers.getContractFactory("ProjectFactory");
-    projectFactory =
-      (await ProjectFactory.deploy(/* FILL_ME_IN: */)) as ProjectFactory;
+    projectFactory = (await ProjectFactory.deploy()) as ProjectFactory;
     await projectFactory.deployed();
   });
 
