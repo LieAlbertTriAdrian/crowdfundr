@@ -23,6 +23,9 @@ npx prettier '**/*.{json,sol,md,ts}' --check
 npx prettier '**/*.{json,sol,md,ts}' --write
 npx solhint 'contracts/**/*.sol'
 npx solhint 'contracts/**/*.sol' --fix
+
+# Testing in watch mode
+npm run test-watch
 ```
 
 # Etherscan verification
