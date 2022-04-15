@@ -89,6 +89,7 @@ contract Project {
         return badgeOf[owner ];
     }
 
+    // TODO: The difference between payable in .call vs payable in the function declaration
     function withdrawFunds(uint amountToWithdraw) external payable {
         checkAndUpdateProjectStatus();
 
