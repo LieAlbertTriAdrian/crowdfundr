@@ -8,9 +8,9 @@ contract ProjectFactory {
 
     event ProjectCreated(address newProject, string randomName); // Note: you should add additional data fields in this event
 
-    function create() external {
+    function create(uint targetAmount) external {
         // TODO: Remove hardcode parameter for target
-        Project project = new Project(msg.sender, 10);
+        Project project = new Project(msg.sender, targetAmount);
         deployedProjects.push(project);
 
         emit ProjectCreated(address(0xdeadbeef), "HAHAHAHHAHA"); // TODO: replace me with the actual Project's address

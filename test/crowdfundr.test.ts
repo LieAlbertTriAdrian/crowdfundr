@@ -104,15 +104,15 @@ describe("Crowdfundr", () => {
     });
 
     it.only("Can register a single project", async () => {
-      projectFactory.create();
+      projectFactory.create(ONE_ETHER);
       projects = await projectFactory.getDeployedProjects();
 
       expect(projects.length).to.equal(1);
     });
 
     it.only("Can register multiple projects", async () => {
-      projectFactory.create();
-      projectFactory.create();
+      projectFactory.create(ONE_ETHER);
+      projectFactory.create(ONE_ETHER);
       projects = await projectFactory.getDeployedProjects();
 
       expect(projects.length).to.equal(2);
@@ -127,7 +127,7 @@ describe("Crowdfundr", () => {
     });
 
     it.only('Emits a "FILL_ME_IN" event after registering a project', async () => {
-      const txReceiptUnresolved = await projectFactory.create(/* FILL_ME_IN */);
+      const txReceiptUnresolved = await projectFactory.create(ONE_ETHER);
       const txReceipt = await txReceiptUnresolved.wait();
       const event: any = txReceipt.events![0].args!;
 
@@ -158,7 +158,7 @@ describe("Crowdfundr", () => {
     beforeEach(async () => {
       // TODO: Your ProjectFactory contract will need a `create` method, to
       //       create new Projects
-      const txReceiptUnresolved = await projectFactory.create(/* FILL_ME_IN */);
+      const txReceiptUnresolved = await projectFactory.create(ONE_ETHER);
       const txReceipt = await txReceiptUnresolved.wait();
 
       projectAddress = txReceipt.events![0].args![0];
