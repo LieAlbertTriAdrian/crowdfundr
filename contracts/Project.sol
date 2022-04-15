@@ -22,4 +22,23 @@ contract Project {
 
         contributionOf[msg.sender] += msg.value;
     }
+
+    function withdrawFunds() external payable {
+        require(msg.sender == creator);
+        require(address(this).balance >= targetAmount);
+        // TODO: Add more checking such as deadline, etc
+
+        (bool success, ) = (msg.sender).call{value: address(this).balance}("");
+        require(success, "withdrawal failed");
+    }
+
+    function refundContributions() external payable {
+        // TODO: Add checking only if funding goal not met, exceeding deadline, etc
+
+        uint256 amount = contributionOf[msg.sender];
+        contributionOf[msg.sender] = 0;
+
+        (bool success, ) = (msg.sender).call{value: amount}("");
+        require(success, "refund failed");
+    }    
 }
