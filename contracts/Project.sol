@@ -1,15 +1,17 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
+import "hardhat/console.sol";
+
 contract Project {
     address public creator;
     uint256 public goalAmount;
     // minimumContribution for all projects by default in ETH
     // TODO: Change to 0.01 ETH
-    uint256 public constant minimumContribution = 1;
+    uint256 public constant minimumContribution = 0.01 ether;
 
     // Ether held by the contract on behalf of contributors/pledgers
-    mapping(address => uint256) public contributionOf;
+    mapping(address => uint) public contributionOf;
 
     constructor (address _creator, uint256 _goalAmount) public {
         creator = _creator;
@@ -28,15 +30,18 @@ contract Project {
         );
     }
 
-    function contribute() public payable {
+    function contribute() external payable {
+        console.log("msg. value", msg.value);
         require(msg.value >= minimumContribution);
         // TODO: Check for deadline of the project
 
-        contributionOf[msg.sender] += msg.value;
+        contributionOf[msg.sender] += 5;
     }
 
     // get the total amount of ETH owned by the contribute
     function getContribution(address owner) public view returns (uint) {
+        console.log("contribution owner", owner);
+
         return contributionOf[owner ];
     }    
 

@@ -1,3 +1,8 @@
+// TODO: Fix these eslint issues
+/* eslint-disable node/no-missing-import */
+/* eslint-disable no-unused-vars */
+/* eslint-disable camelcase */
+/* eslint-disable no-unused-expressions */
 // ----------------------------------------------------------------------------
 // REQUIRED: Instructions
 // ----------------------------------------------------------------------------
@@ -154,6 +159,7 @@ describe("Crowdfundr", () => {
   describe("Project", () => {
     let projectAddress: string;
     let project: Project;
+    let newProject: Project;
 
     beforeEach(async () => {
       // TODO: Your ProjectFactory contract will need a `create` method, to
@@ -167,20 +173,31 @@ describe("Crowdfundr", () => {
 
     describe("Contributions", () => {
       describe("Contributors", () => {
-        it.only("Allows the creator to contribute", async () => {
+        it("Allows the creator to contribute", async () => {
           await project
             .connect(deployer)
             .contribute({ value: ethers.utils.parseEther("1") });
 
-          // TODO: Figure out how to verify the actual contribution amount
-          expect(true).to.be.false;
+          // TODO: Figure out how to call project.getContributionOf from project from getContractAt
         });
 
-        it("Allows any EOA to contribute", async () => {
-          expect(true).to.be.false;
+        it.only("Allows any EOA to contribute", async () => {
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("1") });
+
+          console.log(await project.getSummary());
         });
 
         it("Allows an EOA to make many separate contributions", async () => {
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("1") });
+
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("2") });
+
           expect(true).to.be.false;
         });
 
@@ -191,6 +208,10 @@ describe("Crowdfundr", () => {
 
       describe("Minimum ETH Per Contribution", () => {
         it("Reverts contributions below 0.01 ETH", async () => {
+          await project
+            .connect(deployer)
+            .contribute({ value: ethers.utils.parseEther("0.001") });
+
           expect(true).to.be.false;
         });
 
