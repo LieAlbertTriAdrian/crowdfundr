@@ -3,7 +3,7 @@ pragma solidity ^0.8.4;
 
 contract Project {
     address public creator;
-    uint256 public targetAmount;
+    uint256 public goalAmount;
     // minimumContribution for all projects by default in ETH
     // TODO: Change to 0.01 ETH
     uint256 public constant minimumContribution = 1;
@@ -11,10 +11,22 @@ contract Project {
     // Ether held by the contract on behalf of contributors/pledgers
     mapping(address => uint256) public contributionOf;
 
-    constructor (address _creator, uint256 _targetAmount) public {
+    constructor (address _creator, uint256 _goalAmount) public {
         creator = _creator;
-        targetAmount = _targetAmount;
+        goalAmount = _goalAmount;
     }
+
+    function getSummary()
+        public
+        view
+        returns (
+            uint256
+        )
+    {
+        return (
+            goalAmount
+        );
+    }    
 
     function contribute() public payable {
         require(msg.value >= minimumContribution);
@@ -25,7 +37,7 @@ contract Project {
 
     function withdrawFunds() external payable {
         require(msg.sender == creator);
-        require(address(this).balance >= targetAmount);
+        require(address(this).balance >= goalAmount);
         // TODO: Add more checking such as deadline, etc
 
         (bool success, ) = (msg.sender).call{value: address(this).balance}("");
