@@ -13,7 +13,7 @@ contract ProjectFactory {
         Project project = new Project(msg.sender, goalAmount);
         deployedProjects.push(project);
 
-        emit ProjectCreated(address(0xdeadbeef), goalAmount); // TODO: replace me with the actual Project's address
+        emit ProjectCreated(address(project), goalAmount); // TODO: replace me with the actual Project's address
     }
 
     function getDeployedProjects() public view returns (Project[] memory) {
