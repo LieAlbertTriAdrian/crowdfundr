@@ -213,11 +213,13 @@ describe("Crowdfundr", () => {
         });
 
         it("Allows an EOA to make many separate contributions", async () => {
-
-
           await project
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("2") });
+
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("1") });
 
           const contribution = await project.getContribution(alice.address);
 
