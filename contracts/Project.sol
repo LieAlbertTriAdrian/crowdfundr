@@ -24,6 +24,10 @@ contract Project {
     uint256 public totalContribution;
     uint256 public remainingContribution;
 
+    event ContributionMade(address contributor, uint amount);
+    event WithdrawalMade(uint amount);
+    event refundMade(address contributor, uint amount);
+
     constructor (address _creator, uint256 _goalAmount) public {
         creator = _creator;
         goalAmount = _goalAmount;
@@ -68,6 +72,8 @@ contract Project {
         contributionOf[msg.sender] += msg.value;
         totalContribution += msg.value;
         remainingContribution += msg.value;
+
+        emit ContributionMade(msg.sender, msg.value);
     }
 
     // get the total amount of ETH owned by the contribute
@@ -79,6 +85,7 @@ contract Project {
         checkAndUpdateProjectStatus();
 
         require(msg.sender == creator, "funds could only be withdrawn by the creator");
+        require(isFailure == false, "project is FAILURE");
         require(totalContribution >= goalAmount, "project is not fully funded yet");
         require(isSuccess == true, "project is not SUCCESS yet");
         require(amountToWithdraw <= remainingContribution, 'you do not have enough balance');
@@ -86,6 +93,8 @@ contract Project {
         remainingContribution -= amountToWithdraw;
         (bool success, ) = (msg.sender).call{value: amountToWithdraw}("");
         require(success, "withdrawal failed");
+
+        emit WithdrawalMade(amountToWithdraw);
     }
 
     function refundContributions() external payable {
@@ -94,9 +103,21 @@ contract Project {
         require(isFailure == true, "project is not FAILURE");
 
         uint256 amount = contributionOf[msg.sender];
-        contributionOf[msg.sender] = 0;
+        require(amount > 0, "no money to brefunded");
 
+        contributionOf[msg.sender] = 0;
         (bool success, ) = (msg.sender).call{value: amount}("");
         require(success, "refund failed");
-    }    
+
+        emit refundMade(msg.sender, amount);
+    }
+
+    function cancelProject() external {
+        require(msg.sender == creator, "cancellation can only be done by creator");
+        require(block.timestamp < deadline, "cancellation could not be after 30 days passed");
+
+        isFailure = true;
+        isSuccess = false;
+        isActive = false;
+    }
 }

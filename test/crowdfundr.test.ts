@@ -126,11 +126,23 @@ describe("Crowdfundr", () => {
     });
 
     it("Registers projects with the correct owner", async () => {
-      expect(true).to.be.false;
+      await projectFactory.create(ethers.utils.parseEther("3"));
+
+      const projectAddress = await projectFactory.deployedProjects(0);
+      const project = await ethers.getContractAt("Project", projectAddress);
+
+      expect(deployer.address).to.be.equal(await project.creator());
     });
 
     it("Registers projects with a preset funding goal (in units of ether)", async () => {
-      expect(true).to.be.false;
+      await projectFactory.create(ethers.utils.parseEther("3"));
+
+      const projectAddress = await projectFactory.deployedProjects(0);
+      const project = await ethers.getContractAt("Project", projectAddress);
+
+      expect(ethers.utils.parseEther("3")).to.be.equal(
+        await project.goalAmount()
+      );
     });
 
     it('Emits a "FILL_ME_IN" event after registering a project', async () => {
@@ -142,6 +154,7 @@ describe("Crowdfundr", () => {
       expect(event).to.not.be.empty;
     });
 
+    // TODO: Clarify, not sure what it means
     it("Allows multiple contracts to accept ETH simultaneously", async () => {
       expect(true).to.be.false;
     });
@@ -200,9 +213,7 @@ describe("Crowdfundr", () => {
         });
 
         it("Allows an EOA to make many separate contributions", async () => {
-          await project
-            .connect(alice)
-            .contribute({ value: ethers.utils.parseEther("1") });
+
 
           await project
             .connect(alice)
@@ -214,7 +225,14 @@ describe("Crowdfundr", () => {
         });
 
         it('Emits a "FILL_ME_IN" event after a contribution is made', async () => {
-          expect(true).to.be.false;
+          const txReceiptUnresolved = await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("1") });
+          const txReceipt = await txReceiptUnresolved.wait();
+          const event: any = txReceipt.events![0].args!;
+
+          // eslint-disable-next-line no-unused-expressions
+          expect(event).to.not.be.empty;
         });
       });
 
@@ -339,7 +357,18 @@ describe("Crowdfundr", () => {
         });
 
         it('Emits a "FILL_ME_IN" event after a withdrawal is made by the creator', async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("5") });
+
+          const txReceiptUnresolved = await project
+            .connect(deployer)
+            .withdrawFunds(ONE_ETHER);
+          const txReceipt = await txReceiptUnresolved.wait();
+          const event: any = txReceipt.events![0].args!;
+
+          // eslint-disable-next-line no-unused-expressions
+          expect(event).to.not.be.empty;
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {
@@ -357,40 +386,105 @@ describe("Crowdfundr", () => {
 
       describe("Project Status: Failure", () => {
         it("Prevents the creator from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("2") });
+
+          await network.provider.send("evm_increaseTime", [
+            SECONDS_IN_DAY * 31,
+          ]);
+          await network.provider.send("evm_mine");
+
+          await expect(
+            project.connect(deployer).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("project is FAILURE");
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("2") });
+
+          await network.provider.send("evm_increaseTime", [
+            SECONDS_IN_DAY * 31,
+          ]);
+          await network.provider.send("evm_mine");
+
+          await expect(
+            project.connect(alice).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("funds could only be withdrawn by the creator");
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
-          expect(true).to.be.false;
+          await project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("2") });
+
+          await network.provider.send("evm_increaseTime", [
+            SECONDS_IN_DAY * 31,
+          ]);
+          await network.provider.send("evm_mine");
+
+          await expect(
+            project.connect(bob).withdrawFunds(ONE_ETHER)
+          ).to.be.revertedWith("funds could only be withdrawn by the creator");
         });
       });
     });
 
     describe("Refunds", () => {
       it("Allows contributors to be refunded when a project fails", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("2") });
+
+        await network.provider.send("evm_increaseTime", [SECONDS_IN_DAY * 31]);
+        await network.provider.send("evm_mine");
+
+        await project.connect(alice).refundContributions();
       });
 
       it("Prevents contributors from being refunded if a project has not failed", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("2") });
+
+        await expect(
+          project.connect(alice).refundContributions()
+        ).to.be.revertedWith("project is not FAILURE");
       });
 
       it('Emits a "FILL_ME_IN" event after a a contributor receives a refund', async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("2") });
+
+        await network.provider.send("evm_increaseTime", [SECONDS_IN_DAY * 31]);
+        await network.provider.send("evm_mine");
+
+        const txReceiptUnresolved = await project
+          .connect(alice)
+          .refundContributions();
+        const txReceipt = await txReceiptUnresolved.wait();
+        const event: any = txReceipt.events![0].args!;
+
+        // eslint-disable-next-line no-unused-expressions
+        expect(event).to.not.be.empty;
       });
     });
 
     describe("Cancelations (creator-triggered project failures)", () => {
       it("Allows the creator to cancel the project if < 30 days since deployment has passed ", async () => {
-        expect(true).to.be.false;
+        await project.connect(deployer).cancelProject();
       });
 
       it("Prevents the creator from canceling the project if at least 30 days have passed", async () => {
-        expect(true).to.be.false;
+        await network.provider.send("evm_increaseTime", [SECONDS_IN_DAY * 31]);
+        await network.provider.send("evm_mine");
+
+        await expect(
+          project.connect(deployer).cancelProject()
+        ).to.be.revertedWith("cancellation could not be after 30 days passed");        
       });
 
       it('Emits a "FILL_ME_IN" event after a project is cancelled by the creator', async () => {
