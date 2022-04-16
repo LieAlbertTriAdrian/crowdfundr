@@ -52,10 +52,12 @@ contract Project is ERC721 {
         totalContribution += msg.value;
         remainingContribution += msg.value;
 
-        if (contributionOf[msg.sender] >= (previousContribution / 1 ether + 1 )) {
+        // Note: Upper and floor function don't exist so * 1 ether and / 1 ether are being used here e.g. / 1 ether + 1 is upper function then * 1 ether to change it back to ether
+        if (contributionOf[msg.sender] >= (previousContribution / 1 ether + 1 ) * 1 ether) {
             uint additionalBadge = ( (contributionOf[msg.sender] / 1 ether) - badgeOf[msg.sender] ) / 1;
 
             badgeOf[msg.sender] += additionalBadge;
+            _mint(msg.sender, badgeOf[msg.sender]);
         }
 
         emit ContributionMade(msg.sender, msg.value);
