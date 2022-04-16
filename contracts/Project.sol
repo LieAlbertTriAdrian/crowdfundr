@@ -1,7 +1,9 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-contract Project {
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+
+contract Project is ERC721 {
     address public creator;
     uint256 public goalAmount;
     uint public deadline;
@@ -27,7 +29,7 @@ contract Project {
     event WithdrawalMade(uint amount);
     event refundMade(address contributor, uint amount);
 
-    constructor (address _creator, uint256 _goalAmount) public {
+    constructor (address _creator, uint256 _goalAmount) ERC721("Project Contribution Badge", "PCB") {
         creator = _creator;
         goalAmount = _goalAmount;
         deadline = block.timestamp + 30 days;

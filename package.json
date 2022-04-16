@@ -35,5 +35,8 @@
   },
   "scripts": {
     "test-watch": "nodemon -x 'npx hardhat test' -w contracts -w test -e js,ts,sol"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.5.0"
   }
 }
