@@ -9,13 +9,13 @@ contract Project is ERC721 {
     address public creator;
     uint public goalAmount;
     uint public deadline;
-    // minimumContribution for all projects by default in ETH
     
     enum ProjectStatus{ ACTIVE, SUCCESS, FAILURE }
     bool isCancelled;
 
     // Ether held by the contract on behalf of contributors/pledgers
     mapping(address => uint) public contributionOf;
+    // Badge status held by the contract on behalf of contributors/pledgers
     mapping(address => uint) public badgeOf;
 
     uint public totalContribution;
@@ -36,7 +36,7 @@ contract Project is ERC721 {
         if (totalContribution >= goalAmount) {
             return ProjectStatus.SUCCESS;
         } else {
-            if (block.timestamp >= deadline) {
+            if (isCancelled || block.timestamp >= deadline) {
                 return ProjectStatus.FAILURE;
             }
         }
