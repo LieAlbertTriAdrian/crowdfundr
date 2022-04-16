@@ -32,6 +32,11 @@ contract Project is ERC721 {
         deadline = block.timestamp + 30 days;
     }
 
+    modifier onlyCreator() {
+        require(msg.sender == creator, "This operation could only be done by the creator");
+        _;
+    }
+
     function checkStatus() private view returns (ProjectStatus) {
         if (totalContribution >= goalAmount) {
             return ProjectStatus.SUCCESS;
@@ -75,8 +80,7 @@ contract Project is ERC721 {
     }
 
     // TODO: The difference between payable in .call vs payable in the function declaration
-    function withdrawFunds(uint amountToWithdraw) external payable {
-        require(msg.sender == creator, "funds could only be withdrawn by the creator");
+    function withdrawFunds(uint amountToWithdraw) onlyCreator external payable {
         require(checkStatus() == ProjectStatus.SUCCESS, "project is not SUCCESS");
         require(totalContribution >= goalAmount, "project is not fully funded yet");
         require(amountToWithdraw <= remainingContribution, 'you do not have enough balance');
@@ -101,8 +105,7 @@ contract Project is ERC721 {
         emit RefundMade(msg.sender, amount);
     }
 
-    function cancelProject() external {
-        require(msg.sender == creator, "cancellation can only be done by creator");
+    function cancelProject() onlyCreator external {
         require(checkStatus() == ProjectStatus.ACTIVE, "cancellation could not be after 30 days passed");
 
         isCancelled = true;

@@ -299,13 +299,17 @@ describe("Crowdfundr", () => {
         it("Prevents contributors from withdrawing any funds", async () => {
           await expect(
             project.connect(alice).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("funds could only be withdrawn by the creator");
+          ).to.be.revertedWith(
+            "This operation could only be done by the creator"
+          );
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
           await expect(
             project.connect(alice).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("funds could only be withdrawn by the creator");
+          ).to.be.revertedWith(
+            "This operation could only be done by the creator"
+          );
         });
       });
 
@@ -361,13 +365,17 @@ describe("Crowdfundr", () => {
         it("Prevents contributors from withdrawing any funds", async () => {
           await expect(
             project.connect(alice).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("funds could only be withdrawn by the creator");
+          ).to.be.revertedWith(
+            "This operation could only be done by the creator"
+          );
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
           await expect(
             project.connect(bob).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("funds could only be withdrawn by the creator");
+          ).to.be.revertedWith(
+            "This operation could only be done by the creator"
+          );
         });
       });
 
@@ -393,7 +401,9 @@ describe("Crowdfundr", () => {
 
           await expect(
             project.connect(alice).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("funds could only be withdrawn by the creator");
+          ).to.be.revertedWith(
+            "This operation could only be done by the creator"
+          );
         });
 
         it("Prevents non-contributors from withdrawing any funds", async () => {
@@ -405,7 +415,9 @@ describe("Crowdfundr", () => {
 
           await expect(
             project.connect(bob).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("funds could only be withdrawn by the creator");
+          ).to.be.revertedWith(
+            "This operation could only be done by the creator"
+          );
         });
       });
     });
