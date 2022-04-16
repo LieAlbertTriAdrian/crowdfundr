@@ -144,13 +144,11 @@ describe("Crowdfundr", () => {
       );
     });
 
-    it('Emits a "FILL_ME_IN" event after registering a project', async () => {
+    it('Emits a "ProjectCreated" event after registering a project', async () => {
       const txReceiptUnresolved = await projectFactory.create(ONE_ETHER);
       const txReceipt = await txReceiptUnresolved.wait();
-      const event: any = txReceipt.events![0].args!;
 
-      // eslint-disable-next-line no-unused-expressions
-      expect(event).to.not.be.empty;
+      expect(txReceipt.events![0].event).to.equal("ProjectCreated");
     });
 
     // TODO: Clarify, not sure what it means
@@ -222,15 +220,13 @@ describe("Crowdfundr", () => {
           expect(contribution).to.be.equal(ethers.utils.parseEther("3"));
         });
 
-        it('Emits a "FILL_ME_IN" event after a contribution is made', async () => {
+        it('Emits a "ContributionMade" event after a contribution is made', async () => {
           const txReceiptUnresolved = await project
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("1") });
           const txReceipt = await txReceiptUnresolved.wait();
-          const event: any = txReceipt.events![0].args!;
 
-          // eslint-disable-next-line no-unused-expressions
-          expect(event).to.not.be.empty;
+          expect(txReceipt.events![1].event).to.equal("ContributionMade");
         });
       });
 
@@ -349,7 +345,7 @@ describe("Crowdfundr", () => {
           ).to.be.revertedWith("you do not have enough balance");
         });
 
-        it('Emits a "FILL_ME_IN" event after a withdrawal is made by the creator', async () => {
+        it('Emits a "WithdrawalMade" event after a withdrawal is made by the creator', async () => {
           await project
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("5") });
@@ -358,10 +354,8 @@ describe("Crowdfundr", () => {
             .connect(deployer)
             .withdrawFunds(ONE_ETHER);
           const txReceipt = await txReceiptUnresolved.wait();
-          const event: any = txReceipt.events![0].args!;
 
-          // eslint-disable-next-line no-unused-expressions
-          expect(event).to.not.be.empty;
+          expect(txReceipt.events![0].event).to.equal("WithdrawalMade");
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {
@@ -422,8 +416,7 @@ describe("Crowdfundr", () => {
           .connect(alice)
           .contribute({ value: ethers.utils.parseEther("2") });
 
-        await network.provider.send("evm_increaseTime", [SECONDS_IN_DAY * 31]);
-        await network.provider.send("evm_mine");
+        await timeTravel(SECONDS_IN_DAY * 31);
 
         await project.connect(alice).refundContributions();
       });
@@ -438,22 +431,19 @@ describe("Crowdfundr", () => {
         ).to.be.revertedWith("project is not FAILURE");
       });
 
-      it('Emits a "FILL_ME_IN" event after a a contributor receives a refund', async () => {
+      it('Emits a "RefundMade" event after a a contributor receives a refund', async () => {
         await project
           .connect(alice)
           .contribute({ value: ethers.utils.parseEther("2") });
 
-        await network.provider.send("evm_increaseTime", [SECONDS_IN_DAY * 31]);
-        await network.provider.send("evm_mine");
+        await timeTravel(SECONDS_IN_DAY * 31);
 
         const txReceiptUnresolved = await project
           .connect(alice)
           .refundContributions();
         const txReceipt = await txReceiptUnresolved.wait();
-        const event: any = txReceipt.events![0].args!;
 
-        // eslint-disable-next-line no-unused-expressions
-        expect(event).to.not.be.empty;
+        expect(txReceipt.events![0].event).to.equal("RefundMade");
       });
     });
 
@@ -463,16 +453,17 @@ describe("Crowdfundr", () => {
       });
 
       it("Prevents the creator from canceling the project if at least 30 days have passed", async () => {
-        await network.provider.send("evm_increaseTime", [SECONDS_IN_DAY * 31]);
-        await network.provider.send("evm_mine");
-
+        await timeTravel(SECONDS_IN_DAY * 31);
         await expect(
           project.connect(deployer).cancelProject()
         ).to.be.revertedWith("cancellation could not be after 30 days passed");
       });
 
-      it('Emits a "FILL_ME_IN" event after a project is cancelled by the creator', async () => {
-        expect(true).to.be.false;
+      it('Emits a "CancellationMade" event after a project is cancelled by the creator', async () => {
+        const txReceiptUnresolved = await project.cancelProject();
+        const txReceipt = await txReceiptUnresolved.wait();
+
+        expect(txReceipt.events![0].event).to.equal("CancellationMade");
       });
     });
 

@@ -21,9 +21,10 @@ contract Project is ERC721 {
     uint public totalContribution;
     uint public remainingContribution;
 
-    event ContributionMade(address contributor, uint amount);
+    event ContributionMade(address indexed contributor, uint amount);
     event WithdrawalMade(uint amount);
-    event refundMade(address contributor, uint amount);
+    event RefundMade(address indexed contributor, uint amount);
+    event CancellationMade();
 
     constructor (address _creator, uint _goalAmount) ERC721("Project Contribution Badge", "PCB") {
         creator = _creator;
@@ -97,7 +98,7 @@ contract Project is ERC721 {
         (bool success, ) = (msg.sender).call{value: amount}("");
         require(success, "refund failed");
 
-        emit refundMade(msg.sender, amount);
+        emit RefundMade(msg.sender, amount);
     }
 
     function cancelProject() external {
@@ -105,5 +106,7 @@ contract Project is ERC721 {
         require(checkStatus() == ProjectStatus.ACTIVE, "cancellation could not be after 30 days passed");
 
         isCancelled = true;
+
+        emit CancellationMade();
     }
 }
