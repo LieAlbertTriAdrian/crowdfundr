@@ -5,10 +5,10 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Project is ERC721 {
     address public creator;
-    uint256 public goalAmount;
+    uint public goalAmount;
     uint public deadline;
     // minimumContribution for all projects by default in ETH
-    uint256 public constant minimumContribution = 0.01 ether;
+    uint public constant minimumContribution = 0.01 ether;
     
     // TODO: Use enum for project statuses
     // enum ProjectStatus{ ACTIVE, SUCCESS, FAILURE }
@@ -22,14 +22,14 @@ contract Project is ERC721 {
     mapping(address => uint) public contributionOf;
     mapping(address => uint) public badgeOf;
 
-    uint256 public totalContribution;
-    uint256 public remainingContribution;
+    uint public totalContribution;
+    uint public remainingContribution;
 
     event ContributionMade(address contributor, uint amount);
     event WithdrawalMade(uint amount);
     event refundMade(address contributor, uint amount);
 
-    constructor (address _creator, uint256 _goalAmount) ERC721("Project Contribution Badge", "PCB") {
+    constructor (address _creator, uint _goalAmount) ERC721("Project Contribution Badge", "PCB") {
         creator = _creator;
         goalAmount = _goalAmount;
         deadline = block.timestamp + 30 days;
@@ -42,7 +42,7 @@ contract Project is ERC721 {
         public
         view
         returns (
-            uint256
+            uint
         )
     {
         return (
@@ -113,7 +113,7 @@ contract Project is ERC721 {
         checkAndUpdateProjectStatus();
         require(isFailure == true, "project is not FAILURE");
 
-        uint256 amount = contributionOf[msg.sender];
+        uint amount = contributionOf[msg.sender];
         require(amount > 0, "no money to brefunded");
 
         contributionOf[msg.sender] = 0;
