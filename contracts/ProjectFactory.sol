@@ -1,22 +1,21 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import './Project.sol';
+import { Project } from './Project.sol';
 
 contract ProjectFactory {
-    Project[] public deployedProjects;
+    Project[] public projects;
 
-    event ProjectCreated(address newProject, uint goalAmount); // Note: you should add additional data fields in this event
+    event ProjectCreated(address indexed creator, address project, uint _goalAmount);
 
-    function create(uint goalAmount) external {
-        // TODO: Remove hardcode parameter for target
-        Project project = new Project(msg.sender, goalAmount);
-        deployedProjects.push(project);
+    function create(uint _goalAmount) external {
+        Project project = new Project(msg.sender, _goalAmount);
+        projects.push(project);
 
-        emit ProjectCreated(address(project), goalAmount); // TODO: replace me with the actual Project's address
+        emit ProjectCreated(msg.sender, address(project), _goalAmount);
     }
 
-    function getDeployedProjects() public view returns (Project[] memory) {
-        return deployedProjects;
+    function getProjects() public view returns (Project[] memory) {
+        return projects;
     }
 }

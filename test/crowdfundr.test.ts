@@ -112,7 +112,7 @@ describe("Crowdfundr", () => {
 
     it("Can register a single project", async () => {
       projectFactory.create(ONE_ETHER);
-      projects = await projectFactory.getDeployedProjects();
+      projects = await projectFactory.getProjects();
 
       expect(projects.length).to.equal(1);
     });
@@ -120,7 +120,7 @@ describe("Crowdfundr", () => {
     it("Can register multiple projects", async () => {
       projectFactory.create(ONE_ETHER);
       projectFactory.create(ONE_ETHER);
-      projects = await projectFactory.getDeployedProjects();
+      projects = await projectFactory.getProjects();
 
       expect(projects.length).to.equal(2);
     });
@@ -128,7 +128,7 @@ describe("Crowdfundr", () => {
     it("Registers projects with the correct owner", async () => {
       await projectFactory.create(ethers.utils.parseEther("3"));
 
-      const projectAddress = await projectFactory.deployedProjects(0);
+      const projectAddress = await projectFactory.projects(0);
       const project = await ethers.getContractAt("Project", projectAddress);
 
       expect(deployer.address).to.be.equal(await project.creator());
@@ -137,7 +137,7 @@ describe("Crowdfundr", () => {
     it("Registers projects with a preset funding goal (in units of ether)", async () => {
       await projectFactory.create(ethers.utils.parseEther("3"));
 
-      const projectAddress = await projectFactory.deployedProjects(0);
+      const projectAddress = await projectFactory.projects(0);
       const project = await ethers.getContractAt("Project", projectAddress);
 
       expect(ethers.utils.parseEther("3")).to.be.equal(
@@ -183,7 +183,7 @@ describe("Crowdfundr", () => {
       );
       const txReceipt = await txReceiptUnresolved.wait();
 
-      projectAddress = txReceipt.events![0].args![0];
+      projectAddress = txReceipt.events![0].args![1];
       project = await ethers.getContractAt("Project", projectAddress);
     });
 
