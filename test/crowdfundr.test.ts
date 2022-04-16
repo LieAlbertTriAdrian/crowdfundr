@@ -278,9 +278,7 @@ describe("Crowdfundr", () => {
             project
               .connect(deployer)
               .contribute({ value: ethers.utils.parseEther("0.02") })
-          ).to.be.revertedWith(
-            "project is fully funded and doesn't accept contribution anymore"
-          );
+          ).to.be.revertedWith("project is not ACTIVE anymore");
         });
 
         it("Prevents additional contributions after 30 days have passed since Project instance deployment", async () => {
@@ -303,7 +301,7 @@ describe("Crowdfundr", () => {
         it("Prevents the creator from withdrawing any funds", async () => {
           await expect(
             project.connect(deployer).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("project is not fully funded yet");
+          ).to.be.revertedWith("project is not SUCCESS");
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {
@@ -396,7 +394,7 @@ describe("Crowdfundr", () => {
 
           await expect(
             project.connect(deployer).withdrawFunds(ONE_ETHER)
-          ).to.be.revertedWith("project is FAILURE");
+          ).to.be.revertedWith("project is not SUCCESS");
         });
 
         it("Prevents contributors from withdrawing any funds", async () => {

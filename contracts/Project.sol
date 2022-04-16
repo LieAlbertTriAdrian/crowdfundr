@@ -4,19 +4,15 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Project is ERC721 {
+    uint public constant minimumContribution = 0.01 ether;
+
     address public creator;
     uint public goalAmount;
     uint public deadline;
     // minimumContribution for all projects by default in ETH
-    uint public constant minimumContribution = 0.01 ether;
     
-    // TODO: Use enum for project statuses
-    // enum ProjectStatus{ ACTIVE, SUCCESS, FAILURE }
-    string projectStatus;
-    // TODO: Solve string comparison  TypeError: Operator == not compatible with types string storage ref and literal_string "ACTIVE"
-    bool isActive;
-    bool isSuccess;
-    bool isFailure;
+    enum ProjectStatus{ ACTIVE, SUCCESS, FAILURE }
+    bool isCancelled;
 
     // Ether held by the contract on behalf of contributors/pledgers
     mapping(address => uint) public contributionOf;
@@ -33,41 +29,22 @@ contract Project is ERC721 {
         creator = _creator;
         goalAmount = _goalAmount;
         deadline = block.timestamp + 30 days;
-        isActive = true;
-        isFailure = false;
-        isSuccess = false;
     }
 
-    function getSummary()
-        public
-        view
-        returns (
-            uint
-        )
-    {
-        return (
-            goalAmount
-        );
-    }
-
-    function checkAndUpdateProjectStatus() private {
+    function checkStatus() private view returns (ProjectStatus) {
         if (totalContribution >= goalAmount) {
-            isSuccess = true;
-            isFailure = false;
-            isActive = false;
+            return ProjectStatus.SUCCESS;
         } else {
             if (block.timestamp >= deadline) {
-                isFailure = true;
-                isSuccess = false;
-                isActive = false;
+                return ProjectStatus.FAILURE;
             }
         }
+
+        return ProjectStatus.ACTIVE;
     }
 
     function contribute() external payable {
-        checkAndUpdateProjectStatus();
-        require(block.timestamp < deadline, "project is not ACTIVE anymore");
-        require(totalContribution < goalAmount, "project is fully funded and doesn't accept contribution anymore");
+        require(checkStatus() == ProjectStatus.ACTIVE, "project is not ACTIVE anymore");
         require(msg.value >= minimumContribution, "contribution amount is too small");
 
         contributionOf[msg.sender] += msg.value;
@@ -93,12 +70,9 @@ contract Project is ERC721 {
 
     // TODO: The difference between payable in .call vs payable in the function declaration
     function withdrawFunds(uint amountToWithdraw) external payable {
-        checkAndUpdateProjectStatus();
-
         require(msg.sender == creator, "funds could only be withdrawn by the creator");
-        require(isFailure == false, "project is FAILURE");
+        require(checkStatus() == ProjectStatus.SUCCESS, "project is not SUCCESS");
         require(totalContribution >= goalAmount, "project is not fully funded yet");
-        require(isSuccess == true, "project is not SUCCESS yet");
         require(amountToWithdraw <= remainingContribution, 'you do not have enough balance');
 
         remainingContribution -= amountToWithdraw;
@@ -109,9 +83,7 @@ contract Project is ERC721 {
     }
 
     function refundContributions() external payable {
-        // TODO: Add checking only if funding goal not met, exceeding deadline, etc
-        checkAndUpdateProjectStatus();
-        require(isFailure == true, "project is not FAILURE");
+        require(checkStatus() == ProjectStatus.FAILURE, "project is not FAILURE");
 
         uint amount = contributionOf[msg.sender];
         require(amount > 0, "no money to brefunded");
@@ -125,10 +97,8 @@ contract Project is ERC721 {
 
     function cancelProject() external {
         require(msg.sender == creator, "cancellation can only be done by creator");
-        require(block.timestamp < deadline, "cancellation could not be after 30 days passed");
+        require(checkStatus() == ProjectStatus.ACTIVE, "cancellation could not be after 30 days passed");
 
-        isFailure = true;
-        isSuccess = false;
-        isActive = false;
+        isCancelled = true;
     }
 }
