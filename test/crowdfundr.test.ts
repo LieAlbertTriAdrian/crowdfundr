@@ -49,7 +49,6 @@ import type { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { Project, ProjectFactory, ProjectFactory__factory } from "../typechain";
 
 chai.use(solidity);
-
 // ----------------------------------------------------------------------------
 // OPTIONAL: Constants and Helper Functions
 // ----------------------------------------------------------------------------
@@ -65,10 +64,10 @@ const timeTravel = async (seconds: number) => {
 };
 
 // Or, set the time to be a specific amount (in seconds past epoch time)
-const setBlockTimeTo = async (seconds: number) => {
-  await network.provider.send("evm_setNextBlockTimestamp", [seconds]);
-  await network.provider.send("evm_mine");
-};
+// const setBlockTimeTo = async (seconds: number) => {
+//   await network.provider.send("evm_setNextBlockTimestamp", [seconds]);
+//   await network.provider.send("evm_mine");
+// };
 // ----------------------------------------------------------------------------
 
 describe("Crowdfundr", () => {
@@ -282,10 +281,7 @@ describe("Crowdfundr", () => {
         });
 
         it("Prevents additional contributions after 30 days have passed since Project instance deployment", async () => {
-          await network.provider.send("evm_increaseTime", [
-            SECONDS_IN_DAY * 31,
-          ]);
-          await network.provider.send("evm_mine");
+          await timeTravel(SECONDS_IN_DAY * 31);
 
           await expect(
             project
@@ -387,10 +383,7 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("2") });
 
-          await network.provider.send("evm_increaseTime", [
-            SECONDS_IN_DAY * 31,
-          ]);
-          await network.provider.send("evm_mine");
+          await timeTravel(SECONDS_IN_DAY * 31);
 
           await expect(
             project.connect(deployer).withdrawFunds(ONE_ETHER)
@@ -402,10 +395,7 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("2") });
 
-          await network.provider.send("evm_increaseTime", [
-            SECONDS_IN_DAY * 31,
-          ]);
-          await network.provider.send("evm_mine");
+          await timeTravel(SECONDS_IN_DAY * 31);
 
           await expect(
             project.connect(alice).withdrawFunds(ONE_ETHER)
@@ -417,10 +407,7 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("2") });
 
-          await network.provider.send("evm_increaseTime", [
-            SECONDS_IN_DAY * 31,
-          ]);
-          await network.provider.send("evm_mine");
+          await timeTravel(SECONDS_IN_DAY * 31);
 
           await expect(
             project.connect(bob).withdrawFunds(ONE_ETHER)
