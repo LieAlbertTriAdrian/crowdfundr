@@ -178,7 +178,7 @@ describe("Crowdfundr", () => {
       // TODO: Your ProjectFactory contract will need a `create` method, to
       //       create new Projects
       const txReceiptUnresolved = await projectFactory.create(
-        ethers.utils.parseEther("3")
+        ethers.utils.parseEther("5")
       );
       const txReceipt = await txReceiptUnresolved.wait();
 
@@ -480,7 +480,7 @@ describe("Crowdfundr", () => {
       it("Awards a contributor with a badge when they make a single contribution of at least 1 ETH", async () => {
         await project
           .connect(alice)
-          .contribute({ value: ethers.utils.parseEther("2.5") });
+          .contribute({ value: ethers.utils.parseEther("1.1") });
 
         const badgeCount = await project.connect(alice).getBadge(alice.address);
 
@@ -490,7 +490,11 @@ describe("Crowdfundr", () => {
       it("Awards a contributor with a badge when they make multiple contributions to a single project that sum to at least 1 ETH", async () => {
         await project
           .connect(alice)
-          .contribute({ value: ethers.utils.parseEther("2.5") });
+          .contribute({ value: ethers.utils.parseEther("0.6") });
+
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("0.5") });
 
         const badgeCount = await project.connect(alice).getBadge(alice.address);
 
@@ -500,7 +504,11 @@ describe("Crowdfundr", () => {
       it("Does not award a contributor with a badge if their total contribution to a single project sums to < 1 ETH", async () => {
         await project
           .connect(alice)
-          .contribute({ value: ethers.utils.parseEther("0.05") });
+          .contribute({ value: ethers.utils.parseEther("0.6") });
+
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("0.39") });
 
         const badgeCount = await project.connect(alice).getBadge(alice.address);
 
@@ -510,11 +518,31 @@ describe("Crowdfundr", () => {
       it("Awards a contributor with a second badge when their total contribution to a single project sums to at least 2 ETH", async () => {
         // Note: One address can receive multiple badges for a single project,
         //       but they should receive 1 badge per 1 ETH contributed.
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("0.6") });
+
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("1.41") });
+
+        const badgeCount = await project.connect(alice).getBadge(alice.address);
+
+        expect(badgeCount).to.be.equal(2);
       });
 
       it("Does not award a contributor with a second badge if their total contribution to a single project is > 1 ETH but < 2 ETH", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("0.6") });
+
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("1.39") });
+
+        const badgeCount = await project.connect(alice).getBadge(alice.address);
+
+        expect(badgeCount).to.be.equal(1);
       });
 
       it("Awards contributors with different NFTs for contributions to different projects", async () => {

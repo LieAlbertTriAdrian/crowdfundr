@@ -47,12 +47,15 @@ contract Project is ERC721 {
         require(checkStatus() == ProjectStatus.ACTIVE, "project is not ACTIVE anymore");
         require(msg.value >= minimumContribution, "contribution amount is too small");
 
+        uint previousContribution = contributionOf[msg.sender];
         contributionOf[msg.sender] += msg.value;
         totalContribution += msg.value;
         remainingContribution += msg.value;
 
-        if (msg.value >= 1) {
-            badgeOf[msg.sender] += 1;
+        if (contributionOf[msg.sender] >= (previousContribution / 1 ether + 1 )) {
+            uint additionalBadge = ( (contributionOf[msg.sender] / 1 ether) - badgeOf[msg.sender] ) / 1;
+
+            badgeOf[msg.sender] += additionalBadge;
         }
 
         emit ContributionMade(msg.sender, msg.value);
