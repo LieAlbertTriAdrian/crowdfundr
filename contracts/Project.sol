@@ -4,36 +4,45 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Project is ERC721 {
-    uint public constant minimumContribution = 0.01 ether;
+    uint256 public constant minimumContribution = 0.01 ether;
 
     address public creator;
-    uint public goalAmount;
-    uint public deadline;
-    
-    enum ProjectStatus{ ACTIVE, SUCCESS, FAILURE }
+    uint256 public goalAmount;
+    uint256 public deadline;
+
+    enum ProjectStatus {
+        ACTIVE,
+        SUCCESS,
+        FAILURE
+    }
     bool isCancelled;
 
     // Ether held by the contract on behalf of contributors/pledgers
-    mapping(address => uint) public contributionOf;
+    mapping(address => uint256) public contributionOf;
     // Badge status held by the contract on behalf of contributors/pledgers
-    mapping(address => uint) public badgeOf;
+    mapping(address => uint256) public badgeOf;
 
-    uint public totalContribution;
-    uint public remainingContribution;
+    uint256 public totalContribution;
+    uint256 public remainingContribution;
 
-    event ContributionMade(address indexed contributor, uint amount);
-    event WithdrawalMade(uint amount);
-    event RefundMade(address indexed contributor, uint amount);
+    event ContributionMade(address indexed contributor, uint256 amount);
+    event WithdrawalMade(uint256 amount);
+    event RefundMade(address indexed contributor, uint256 amount);
     event CancellationMade();
 
-    constructor (address _creator, uint _goalAmount) ERC721("Project Contribution Badge", "PCB") {
+    constructor(address _creator, uint256 _goalAmount)
+        ERC721("Project Contribution Badge", "PCB")
+    {
         creator = _creator;
         goalAmount = _goalAmount;
         deadline = block.timestamp + 30 days;
     }
 
     modifier onlyCreator() {
-        require(msg.sender == creator, "This operation could only be done by the creator");
+        require(
+            msg.sender == creator,
+            "This operation could only be done by the creator"
+        );
         _;
     }
 
@@ -50,17 +59,27 @@ contract Project is ERC721 {
     }
 
     function contribute() external payable {
-        require(checkStatus() == ProjectStatus.ACTIVE, "project is not ACTIVE anymore");
-        require(msg.value >= minimumContribution, "contribution amount is too small");
+        require(
+            checkStatus() == ProjectStatus.ACTIVE,
+            "project is not ACTIVE anymore"
+        );
+        require(
+            msg.value >= minimumContribution,
+            "contribution amount is too small"
+        );
 
-        uint previousContribution = contributionOf[msg.sender];
+        uint256 previousContribution = contributionOf[msg.sender];
         contributionOf[msg.sender] += msg.value;
         totalContribution += msg.value;
         remainingContribution += msg.value;
 
         // Note: Upper and floor function don't exist so * 1 ether and / 1 ether are being used here e.g. / 1 ether + 1 is upper function then * 1 ether to change it back to ether
-        if (contributionOf[msg.sender] >= (previousContribution / 1 ether + 1 ) * 1 ether) {
-            uint additionalBadge = ( (contributionOf[msg.sender] / 1 ether) - badgeOf[msg.sender] ) / 1;
+        if (
+            contributionOf[msg.sender] >=
+            (previousContribution / 1 ether + 1) * 1 ether
+        ) {
+            uint256 additionalBadge = ((contributionOf[msg.sender] / 1 ether) -
+                badgeOf[msg.sender]) / 1;
 
             badgeOf[msg.sender] += additionalBadge;
             _mint(msg.sender, badgeOf[msg.sender]);
@@ -70,20 +89,33 @@ contract Project is ERC721 {
     }
 
     // get the total amount of ETH owned by the contributor
-    function getContribution(address owner) public view returns (uint) {
-        return contributionOf[owner ];
+    function getContribution(address owner) public view returns (uint256) {
+        return contributionOf[owner];
     }
 
     // get the total badges owned by the contributor
-    function getBadge(address owner) public view returns (uint) {
-        return badgeOf[owner ];
+    function getBadge(address owner) public view returns (uint256) {
+        return badgeOf[owner];
     }
 
     // TODO: The difference between payable in .call vs payable in the function declaration
-    function withdrawFunds(uint amountToWithdraw) onlyCreator external payable {
-        require(checkStatus() == ProjectStatus.SUCCESS, "project is not SUCCESS");
-        require(totalContribution >= goalAmount, "project is not fully funded yet");
-        require(amountToWithdraw <= remainingContribution, 'you do not have enough balance');
+    function withdrawFunds(uint256 amountToWithdraw)
+        external
+        payable
+        onlyCreator
+    {
+        require(
+            checkStatus() == ProjectStatus.SUCCESS,
+            "project is not SUCCESS"
+        );
+        require(
+            totalContribution >= goalAmount,
+            "project is not fully funded yet"
+        );
+        require(
+            amountToWithdraw <= remainingContribution,
+            "you do not have enough balance"
+        );
 
         remainingContribution -= amountToWithdraw;
         (bool success, ) = (msg.sender).call{value: amountToWithdraw}("");
@@ -93,9 +125,12 @@ contract Project is ERC721 {
     }
 
     function refundContributions() external payable {
-        require(checkStatus() == ProjectStatus.FAILURE, "project is not FAILURE");
+        require(
+            checkStatus() == ProjectStatus.FAILURE,
+            "project is not FAILURE"
+        );
 
-        uint amount = contributionOf[msg.sender];
+        uint256 amount = contributionOf[msg.sender];
         require(amount > 0, "no money to brefunded");
 
         contributionOf[msg.sender] = 0;
@@ -105,8 +140,11 @@ contract Project is ERC721 {
         emit RefundMade(msg.sender, amount);
     }
 
-    function cancelProject() onlyCreator external {
-        require(checkStatus() == ProjectStatus.ACTIVE, "cancellation could not be after 30 days passed");
+    function cancelProject() external onlyCreator {
+        require(
+            checkStatus() == ProjectStatus.ACTIVE,
+            "cancellation could not be after 30 days passed"
+        );
 
         isCancelled = true;
 

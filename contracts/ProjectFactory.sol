@@ -1,14 +1,18 @@
 //SPDX-License-Identifier: Unlicense
 pragma solidity ^0.8.4;
 
-import { Project } from './Project.sol';
+import {Project} from "./Project.sol";
 
 contract ProjectFactory {
     Project[] public projects;
 
-    event ProjectCreated(address indexed creator, address project, uint _goalAmount);
+    event ProjectCreated(
+        address indexed creator,
+        address project,
+        uint256 _goalAmount
+    );
 
-    function create(uint _goalAmount) external {
+    function create(uint256 _goalAmount) external {
         Project project = new Project(msg.sender, _goalAmount);
         projects.push(project);
 
