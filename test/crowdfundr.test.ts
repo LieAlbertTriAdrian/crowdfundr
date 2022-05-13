@@ -191,7 +191,7 @@ describe("Crowdfundr", () => {
             .connect(deployer)
             .contribute({ value: ethers.utils.parseEther("1") });
 
-          const contribution = await project.getContribution(deployer.address);
+          const contribution = await project.contributionOf(deployer.address);
 
           expect(contribution).to.be.equal(ONE_ETHER);
         });
@@ -201,7 +201,7 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("2") });
 
-          const contribution = await project.getContribution(alice.address);
+          const contribution = await project.contributionOf(alice.address);
 
           expect(contribution).to.be.equal(ethers.utils.parseEther("2"));
         });
@@ -215,7 +215,7 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("1") });
 
-          const contribution = await project.getContribution(alice.address);
+          const contribution = await project.contributionOf(alice.address);
 
           expect(contribution).to.be.equal(ethers.utils.parseEther("3"));
         });
@@ -245,7 +245,7 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("0.01") });
 
-          const contribution = await project.getContribution(alice.address);
+          const contribution = await project.contributionOf(alice.address);
 
           expect(contribution).to.be.equal(ethers.utils.parseEther("0.01"));
         });
@@ -259,7 +259,7 @@ describe("Crowdfundr", () => {
             .connect(alice)
             .contribute({ value: ethers.utils.parseEther("5") });
 
-          const contribution = await project.getContribution(alice.address);
+          const contribution = await project.contributionOf(alice.address);
 
           expect(contribution).to.be.equal(ethers.utils.parseEther("5"));
         });
@@ -284,6 +284,16 @@ describe("Crowdfundr", () => {
               .connect(deployer)
               .contribute({ value: ethers.utils.parseEther("1") })
           ).to.be.revertedWith("project is not ACTIVE anymore");
+        });
+
+        it("Prevents any contribution to a cancelled project", async () => {
+          await project.cancelProject();
+
+          await expect(
+            project
+              .connect(deployer)
+              .contribute({ value: ethers.utils.parseEther("1") })
+          ).to.be.revertedWith("PROJECT_IS_CANCELLED");
         });
       });
     });
@@ -485,7 +495,7 @@ describe("Crowdfundr", () => {
           .connect(alice)
           .contribute({ value: ethers.utils.parseEther("1.1") });
 
-        const badgeCount = await project.connect(alice).getBadge(alice.address);
+        const badgeCount = await project.connect(alice).badgeOf(alice.address);
 
         expect(badgeCount).to.be.equal(1);
       });
@@ -499,7 +509,7 @@ describe("Crowdfundr", () => {
           .connect(alice)
           .contribute({ value: ethers.utils.parseEther("0.5") });
 
-        const badgeCount = await project.connect(alice).getBadge(alice.address);
+        const badgeCount = await project.connect(alice).badgeOf(alice.address);
 
         expect(badgeCount).to.be.equal(1);
       });
@@ -513,7 +523,7 @@ describe("Crowdfundr", () => {
           .connect(alice)
           .contribute({ value: ethers.utils.parseEther("0.39") });
 
-        const badgeCount = await project.connect(alice).getBadge(alice.address);
+        const badgeCount = await project.connect(alice).badgeOf(alice.address);
 
         expect(badgeCount).to.be.equal(0);
       });
@@ -529,7 +539,7 @@ describe("Crowdfundr", () => {
           .connect(alice)
           .contribute({ value: ethers.utils.parseEther("1.41") });
 
-        const badgeCount = await project.connect(alice).getBadge(alice.address);
+        const badgeCount = await project.connect(alice).badgeOf(alice.address);
 
         expect(badgeCount).to.be.equal(2);
       });
@@ -543,7 +553,7 @@ describe("Crowdfundr", () => {
           .connect(alice)
           .contribute({ value: ethers.utils.parseEther("1.39") });
 
-        const badgeCount = await project.connect(alice).getBadge(alice.address);
+        const badgeCount = await project.connect(alice).badgeOf(alice.address);
 
         expect(badgeCount).to.be.equal(1);
       });

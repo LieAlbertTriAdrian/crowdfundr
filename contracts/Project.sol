@@ -4,7 +4,7 @@ pragma solidity ^0.8.4;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract Project is ERC721 {
-    uint256 public constant minimumContribution = 0.01 ether;
+    uint256 public constant MINIMUM_CONTRIBUTION = 0.01 ether;
 
     address public creator;
     uint256 public goalAmount;
@@ -59,12 +59,13 @@ contract Project is ERC721 {
     }
 
     function contribute() external payable {
+        require(!isCancelled, "PROJECT_IS_CANCELLED");
         require(
             checkStatus() == ProjectStatus.ACTIVE,
             "project is not ACTIVE anymore"
         );
         require(
-            msg.value >= minimumContribution,
+            msg.value >= MINIMUM_CONTRIBUTION,
             "contribution amount is too small"
         );
 
@@ -88,20 +89,9 @@ contract Project is ERC721 {
         emit ContributionMade(msg.sender, msg.value);
     }
 
-    // get the total amount of ETH owned by the contributor
-    function getContribution(address owner) public view returns (uint256) {
-        return contributionOf[owner];
-    }
-
-    // get the total badges owned by the contributor
-    function getBadge(address owner) public view returns (uint256) {
-        return badgeOf[owner];
-    }
-
     // TODO: The difference between payable in .call vs payable in the function declaration
     function withdrawFunds(uint256 amountToWithdraw)
         external
-        payable
         onlyCreator
     {
         require(
@@ -124,7 +114,7 @@ contract Project is ERC721 {
         emit WithdrawalMade(amountToWithdraw);
     }
 
-    function refundContributions() external payable {
+    function refundContributions() external {
         require(
             checkStatus() == ProjectStatus.FAILURE,
             "project is not FAILURE"
