@@ -151,9 +151,28 @@ describe("Crowdfundr", () => {
       expect(txReceipt.events![0].event).to.equal("ProjectCreated");
     });
 
-    // TODO: Clarify, not sure what it means
     it("Allows multiple contracts to accept ETH simultaneously", async () => {
-      expect(true).to.be.false;
+      const txReceiptUnresolved = await projectFactory.create(ONE_ETHER);
+      const txReceipt = await txReceiptUnresolved.wait();
+      const firstProjectAddress = txReceipt.events![0].args![1];
+      const firstProject = await ethers.getContractAt(
+        "Project",
+        firstProjectAddress
+      );
+
+      const secondTxReceiptUnresolved = await projectFactory.create(ONE_ETHER);
+      const secondTxReceipt = await secondTxReceiptUnresolved.wait();
+      const secondProjectAddress = secondTxReceipt.events![0].args![1];
+      const secondProject = await ethers.getContractAt(
+        "Project",
+        secondProjectAddress
+      );
+
+      await firstProject.connect(alice).contribute({ value: ONE_ETHER });
+      await secondProject.connect(bob).contribute({ value: ONE_ETHER });
+
+      expect(await firstProject.totalContribution()).to.equal(ONE_ETHER);
+      expect(await secondProject.totalContribution()).to.equal(ONE_ETHER);
     });
   });
 
@@ -237,7 +256,7 @@ describe("Crowdfundr", () => {
             project
               .connect(deployer)
               .contribute({ value: ethers.utils.parseEther("0.001") })
-          ).to.be.revertedWith("contribution amount is too small");
+          ).to.be.revertedWith("TOO_LOW_CONTRIBUTION");
         });
 
         it("Accepts contributions of exactly 0.01 ETH", async () => {
@@ -273,7 +292,7 @@ describe("Crowdfundr", () => {
             project
               .connect(deployer)
               .contribute({ value: ethers.utils.parseEther("0.02") })
-          ).to.be.revertedWith("project is not ACTIVE anymore");
+          ).to.be.revertedWith("PROJECT_IS_NOT_ACTIVE");
         });
 
         it("Prevents additional contributions after 30 days have passed since Project instance deployment", async () => {
@@ -283,7 +302,7 @@ describe("Crowdfundr", () => {
             project
               .connect(deployer)
               .contribute({ value: ethers.utils.parseEther("1") })
-          ).to.be.revertedWith("project is not ACTIVE anymore");
+          ).to.be.revertedWith("PROJECT_IS_NOT_ACTIVE");
         });
 
         it("Prevents any contribution to a cancelled project", async () => {
@@ -559,15 +578,70 @@ describe("Crowdfundr", () => {
       });
 
       it("Awards contributors with different NFTs for contributions to different projects", async () => {
-        expect(true).to.be.false;
+        const txReceiptUnresolved = await projectFactory.create(
+          ethers.utils.parseEther("5")
+        );
+        const txReceipt = await txReceiptUnresolved.wait();
+
+        const secondProjectAddress = txReceipt.events![0].args![1];
+        const secondProject = await ethers.getContractAt(
+          "Project",
+          secondProjectAddress
+        );
+
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("1.39") });
+
+        await secondProject
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("1.39") });
+
+        expect(await project.badgeOf(alice.address)).to.be.equal(1);
+        expect(await secondProject.badgeOf(alice.address)).to.be.equal(1);
       });
 
       it("Allows contributor badge holders to trade the NFT to another address", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("1.39") });
+
+        await project
+          .connect(alice)
+          ["safeTransferFrom(address,address,uint256)"](
+            alice.address,
+            deployer.address,
+            1
+          );
+
+        expect(await project.balanceOf(alice.address)).to.be.equal(0);
+        expect(await project.balanceOf(deployer.address)).to.be.equal(1);
+        expect(await project.ownerOf(1)).to.be.equal(deployer.address);
       });
 
       it("Allows contributor badge holders to trade the NFT to another address even after its related project fails", async () => {
-        expect(true).to.be.false;
+        await project
+          .connect(alice)
+          .contribute({ value: ethers.utils.parseEther("1.39") });
+
+        await timeTravel(SECONDS_IN_DAY * 31);
+        await expect(
+          project
+            .connect(alice)
+            .contribute({ value: ethers.utils.parseEther("1.39") })
+        ).to.be.revertedWith("PROJECT_IS_NOT_ACTIVE");
+
+        await project
+          .connect(alice)
+          ["safeTransferFrom(address,address,uint256)"](
+            alice.address,
+            deployer.address,
+            1
+          );
+
+        expect(await project.balanceOf(alice.address)).to.be.equal(0);
+        expect(await project.balanceOf(deployer.address)).to.be.equal(1);
+        expect(await project.ownerOf(1)).to.be.equal(deployer.address);
       });
     });
   });

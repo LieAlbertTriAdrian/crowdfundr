@@ -34,7 +34,9 @@
     "typescript": "^4.6.3"
   },
   "scripts": {
-    "test-watch": "nodemon -x 'npx hardhat test' -w contracts -w test -e js,ts,sol"
+    "test": "npx hardhat test",
+    "test:parallel": "npx mocha --extension ts --require hardhat/register --recursive --parallel --exit",
+    "test:watch": "nodemon -x 'npx hardhat test' -w contracts -w test -e js,ts,sol"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.5.0"

@@ -62,11 +62,11 @@ contract Project is ERC721 {
         require(!isCancelled, "PROJECT_IS_CANCELLED");
         require(
             checkStatus() == ProjectStatus.ACTIVE,
-            "project is not ACTIVE anymore"
+            "PROJECT_IS_NOT_ACTIVE"
         );
         require(
             msg.value >= MINIMUM_CONTRIBUTION,
-            "contribution amount is too small"
+            "TOO_LOW_CONTRIBUTION"
         );
 
         uint256 previousContribution = contributionOf[msg.sender];
