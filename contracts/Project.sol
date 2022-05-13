@@ -60,14 +60,8 @@ contract Project is ERC721 {
 
     function contribute() external payable {
         require(!isCancelled, "PROJECT_IS_CANCELLED");
-        require(
-            checkStatus() == ProjectStatus.ACTIVE,
-            "PROJECT_IS_NOT_ACTIVE"
-        );
-        require(
-            msg.value >= MINIMUM_CONTRIBUTION,
-            "TOO_LOW_CONTRIBUTION"
-        );
+        require(checkStatus() == ProjectStatus.ACTIVE, "PROJECT_IS_NOT_ACTIVE");
+        require(msg.value >= MINIMUM_CONTRIBUTION, "TOO_LOW_CONTRIBUTION");
 
         uint256 previousContribution = contributionOf[msg.sender];
         contributionOf[msg.sender] += msg.value;
@@ -90,10 +84,7 @@ contract Project is ERC721 {
     }
 
     // TODO: The difference between payable in .call vs payable in the function declaration
-    function withdrawFunds(uint256 amountToWithdraw)
-        external
-        onlyCreator
-    {
+    function withdrawFunds(uint256 amountToWithdraw) external onlyCreator {
         require(
             checkStatus() == ProjectStatus.SUCCESS,
             "project is not SUCCESS"

@@ -49,9 +49,11 @@ npx hardhat verify --network ropsten DEPLOYED_CONTRACT_ADDRESS "Hello, Hardhat!"
 For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
 
 # Design Exercise
+
 Smart contracts have a hard limit of 24kb. Crowdfundr hands out an NFT to everyone who contributes. However, consider how Kickstarter has multiple contribution tiers. How would you design your contract to support this, without creating three separate NFT contracts?
 
-Assign the tiers based on the number of NFT owned by contributors / total contributions. For example if a contributor has 10 badges/NFTs, so he will be promoted to GOLD. Less than 10 --> silver. We could create a simple function to get the tier based on the number of NFTs such as 
+Assign the tiers based on the number of NFT owned by contributors / total contributions. For example if a contributor has 10 badges/NFTs, so he will be promoted to GOLD. Less than 10 --> silver. We could create a simple function to get the tier based on the number of NFTs such as
+
 ```
 function getTier(address conttributor) Tier {
     if (num of NFTs owned < 10>) --> return silver
